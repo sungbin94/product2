@@ -14,10 +14,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j  //log.info()
-@RestController //@ResponseBody + @Controller
+//@RestController //@ResponseBody + @Controller
 @RequiredArgsConstructor
 @RequestMapping("/api")
-public class ApiProductController {
+public class ApiProductControllerV1 {
 
   private final ProductSVC productSVC;
 
@@ -67,8 +67,10 @@ public class ApiProductController {
   @GetMapping("/products/{id}")
   public ApiResponse<Product> findById(@PathVariable("id") Long id) {
 
+    //상품조회
     Optional<Product> findedProduct = productSVC.findByProductId(id);
 
+    //응답메세지
     ApiResponse<Product> response = null;
     if (findedProduct.isPresent()) {
       Product product = findedProduct.get();

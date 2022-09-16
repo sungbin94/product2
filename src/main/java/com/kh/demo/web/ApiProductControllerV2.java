@@ -13,40 +13,20 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-@Slf4j  //log.info()
-@RestController //@ResponseBody + @Controller
+@Slf4j
+//@RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
-public class ApiProductController {
+public class ApiProductControllerV2 {
 
   private final ProductSVC productSVC;
 
-    //등록	POST	/api/products
-//    @ResponseBody
-//    @PostMapping(value = "/products")
-//    public ApiResponse<List<Person>> add(@RequestBody String reqMsg) {
-//      log.info("reqMsg={}", reqMsg);
-//
-//      List<Person> persons = new ArrayList<>();
-//
-//      Person p1 = new Person("홍길동", 30);
-//      Person p2 = new Person("홍길순", 20);
-//
-//
-//      persons.add(p1);    persons.add(p2);
-//
-//      ApiResponse.Header header = new ApiResponse.Header("00","성공");
-//      ApiResponse<List<Person>> response = new ApiResponse<>(header, persons);
-//
-//      return response;
-//    }
-
   //등록	POST	/api/products
-//  @ResponseBody
   @PostMapping(value = "/products")
   public ApiResponse<Long> add(@RequestBody AddReq addReq) {
     log.info("reqMsg={}", addReq);
     //검증
+
 
     //AddReq->Product 변환
     Product product = new Product();
@@ -56,34 +36,27 @@ public class ApiProductController {
     Long id = productSVC.save(product);
 
     //응답메세지
-    ApiResponse.Header header = new ApiResponse.Header("00","성공");
-    ApiResponse<Long> response = new ApiResponse<>(header, id);
-
-    return response;
+    return ApiResponse.createApiResMsg("00", "성공", id);
   }
 
   //조회	GET	/api/products/{id}
-//  @ResponseBody
   @GetMapping("/products/{id}")
   public ApiResponse<Product> findById(@PathVariable("id") Long id) {
 
+    //상품조회
     Optional<Product> findedProduct = productSVC.findByProductId(id);
 
+    //응답메세지
     ApiResponse<Product> response = null;
     if (findedProduct.isPresent()) {
-      Product product = findedProduct.get();
-
-      ApiResponse.Header header = new ApiResponse.Header("00","성공");
-      response = new ApiResponse<>(header, product);
+      response = ApiResponse.createApiResMsg("00", "성공", findedProduct.get());
     } else {
-      ApiResponse.Header header = new ApiResponse.Header("01","조회 하고자 하는 정보가 없습니다.");
-      response = new ApiResponse<>(header, null);
+      response = ApiResponse.createApiResMsg("01","조회 하고자 하는 정보가 없습니다.",null);
     }
     return response;
   }
 
   //수정	PATCH	/api/products/{id}
-//  @ResponseBody
   @PatchMapping("/products/{id}")
   public ApiResponse<Product> edit(@PathVariable("id") Long id, @RequestBody EditReq editReq) {
 
@@ -91,13 +64,10 @@ public class ApiProductController {
     ApiResponse<Product> response = null;
     Optional<Product> findedProduct = productSVC.findByProductId(id);
     if (findedProduct.isEmpty()) {
-      ApiResponse.Header header = new ApiResponse.Header("01", "수정 하고자 자하는 상품이 없습니다.");
-      response = new ApiResponse<>(header, null);
-      return response;
+      response = ApiResponse.createApiResMsg("01", "수정할 상품이 없습니다", null);
     }
 
     //EditReq=>Product 변환
-
     Product product = new Product();
     BeanUtils.copyProperties(editReq, product);
 
@@ -105,65 +75,36 @@ public class ApiProductController {
     int affectedRows = productSVC.update(id, product);
 
     //응답메세지
-
-      ApiResponse.Header header = new ApiResponse.Header("00", "성공");
-      response = new ApiResponse<>(header,productSVC.findByProductId(id).get());
+    response = ApiResponse.createApiResMsg("01", "수정할 상품이 없습니다", productSVC.findByProductId(id).get());
 
     return response;
   }
 
   //삭제	DELETE	/api/products/{id}
-//  @ResponseBody
   @DeleteMapping("/products/{id}")
   public ApiResponse<Product> del(@PathVariable("id") Long id) {
 
     //검증
-    ApiResponse<Product> response = null;
     Optional<Product> findedProduct = productSVC.findByProductId(id);
     if (findedProduct.isEmpty()) {
-      ApiResponse.Header header = new ApiResponse.Header("01", "삭제 하고자 하는 상품이 없습니다.");
-      response = new ApiResponse<>(header, null);
-      return response;
+      return ApiResponse.createApiResMsg("01", "삭제할 상품이 없습니다", null);
     }
-
 
     //삭제
     productSVC.deleteByProductId(id);
 
     //응답메세지
-    ApiResponse.Header header = new ApiResponse.Header("00", "성공");
-    response = new ApiResponse<>(header,null);
+    return ApiResponse.createApiResMsg("00", "성공", null);
 
-    return response;
   }
 
   //목록	GET	/api/products
-//  @ResponseBody
   @GetMapping("/products")
   public ApiResponse<List<Product>> findAll() {
 
     List<Product> list = productSVC.findAll();
 
     //api응답 메세지
-    ApiResponse.Header header = new ApiResponse.Header("00", "성공");
-    ApiResponse<List<Product>> response = new ApiResponse<>(header, list);
-
-    return response;
+    return ApiResponse.createApiResMsg("00","성공",list);
   }
-
-  //생성자 주입
-//  public ApiProductController(ProductSVC productSVC) {
-//    this.productSVC = productSVC;
-//  }
-
-  //필드 주입 -> 사용 잘하지 않음
-//  private ProductSVC productSVC;
-
-  //세터메소드 주입  -> 사용 잘하지 않음
-//    @Autowired
-//    public void setInstance(ProductSVC productSVC) {
-//    this.productSVC = productSVC;
-//  }
-
-
 }
